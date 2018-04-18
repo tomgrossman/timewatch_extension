@@ -1,6 +1,6 @@
 {
   "name": "Timewatch extension",
-  "version": "1.0",
+  "version": "2.0",
   "description": "do what they don't do",
   "content_scripts": [{
     "js": ["content.js"],

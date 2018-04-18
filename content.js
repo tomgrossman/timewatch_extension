@@ -1,28 +1,50 @@
-const allAttendedHours = document.getElementsByClassName('cb_attHours');
-let totalDays = 0;
-let totalMinutes = 0;
+let currSpan = document.querySelector('body > div > span');
 
-for (const currHour of allAttendedHours) {
-    const currMinutes = hoursToMinutes(currHour.textContent.trim());
-    if (currMinutes && 1440 > currMinutes && 5 < currMinutes) {
-        totalMinutes += currMinutes;
-        totalDays++;
+do {
+    if (!currSpan) {
+        break;
     }
+
+    const table = currSpan.querySelector('p:nth-child(2) > table:nth-child(2)');
+    handleCurrTable(table);
+
+} while(hasNextSpan(currSpan));
+
+function hasNextSpan (currNode) {
+    if (6 >= currNode.children.length) {
+        currSpan = currNode.children[5];
+
+        return true;
+    }
+
+    return false;
 }
 
-const avgHours = minutesToHours(totalMinutes/totalDays);
+function handleCurrTable (currTable) {
+    const allAttendedHours = currTable.getElementsByClassName('cb_attHours');
+    let totalDays = 0;
+    let totalMinutes = 0;
 
-const table = document.querySelector('body > div > span > p:nth-child(2) > table:nth-child(2)');
-const row = table.insertRow(table.rows.length - 3);
+    for (const currHour of allAttendedHours) {
+        const currMinutes = hoursToMinutes(currHour.textContent.trim());
+        if (currMinutes && 1440 > currMinutes && 5 < currMinutes) {
+            totalMinutes += currMinutes;
+            totalDays++;
+        }
+    }
 
-const cells = {};
-for (let i = 0; i < 13; i++) {
-    cells[i] = row.insertCell(i);
+    const avgHours = minutesToHours(totalMinutes/totalDays);
+    const row = currTable.insertRow(currTable.rows.length - 3);
+
+    const cells = {};
+    for (let i = 0; i < 13; i++) {
+        cells[i] = row.insertCell(i);
+    }
+
+    cells[0].innerHTML = '<b>AVG Hours of working days</b>';
+    cells[10].innerHTML = `<b>${avgHours}</b>`;
+
 }
-
-cells[0].innerHTML = '<td colspan="2" nowrap=""><span style="font-size: 11pt" font-family="Arial"><b>AVG Hours of working days</b></span></td>';
-cells[10].innerHTML = `<td colspan="2" nowrap=""><span style="font-size: 11pt" font-family="Arial"><b>${avgHours}</b></span></td>`;
-
 
 function hoursToMinutes(value) {
     const a = value.split(':');

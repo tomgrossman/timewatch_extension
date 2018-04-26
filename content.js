@@ -21,19 +21,32 @@ function hasNextSpan (currNode) {
 }
 
 function handleCurrTable (currTable) {
+    const allStandardHours = currTable.getElementsByClassName('cb_stdHours');
     const allAttendedHours = currTable.getElementsByClassName('cb_attHours');
-    let totalDays = 0;
-    let totalMinutes = 0;
+    const allAbsences = currTable.getElementsByClassName('cb_absence');
 
-    for (const currHour of allAttendedHours) {
-        const currMinutes = hoursToMinutes(currHour.textContent.trim());
-        if (currMinutes && 1440 > currMinutes && 5 < currMinutes) {
-            totalMinutes += currMinutes;
-            totalDays++;
+    let totalDays = 0;
+    let totalRatio = 0;
+
+    for (let i = 0; i < allStandardHours.length; i++) {
+        if (allAbsences[i] && '' !== allAbsences[i].textContent.trim()) { //vacation
+            continue;
+        }
+
+        const currStdMinutes = hoursToMinutes(allStandardHours[i].textContent.trim());
+        if ('number' === typeof currStdMinutes && 550 > currStdMinutes && 100 < currStdMinutes) {
+            const currAttendedMinutes = hoursToMinutes(allAttendedHours[i].textContent.trim());
+            if ('number' === typeof currAttendedMinutes && 0 < currAttendedMinutes) {
+                totalRatio += currAttendedMinutes/currStdMinutes;
+                totalDays++;
+            }
         }
     }
 
-    const avgHours = minutesToHours(totalMinutes/totalDays);
+    const avgRatio = totalRatio/totalDays;
+    const avgMinutesDaily = 540 * avgRatio;
+    const avgHours = minutesToHours(avgMinutesDaily);
+
     const row = currTable.insertRow(currTable.rows.length - 3);
 
     const cells = {};
@@ -48,6 +61,9 @@ function handleCurrTable (currTable) {
 
 function hoursToMinutes(value) {
     const a = value.split(':');
+    if (0 === a.length) {
+        return null;
+    }
 
     return (Number(a[0])) * 60 + (Number(a[1]));
 }
@@ -56,5 +72,5 @@ function minutesToHours(value) {
     const hours = Math.floor(value / 60);
     const minutes = Math.ceil(value % 60);
 
-    return hours + ':' + minutes;
+    return hours + ':' + ('0' + minutes).slice(-2);
 }
